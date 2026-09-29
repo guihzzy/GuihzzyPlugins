@@ -16,7 +16,33 @@ const lastUserChannels = new Map<string, string>();
 let lastMyChannelId: string | null = null;
 let lastMyChannelTime = 0;
 
+let pendingTransferTimeout: ReturnType<typeof setTimeout> | null = null;
+let pendingTransferChannelId: string | null = null;
+let pendingTransferUserId: string | null = null;
+
+function clearPendingTransfer() {
+    if (pendingTransferTimeout) {
+        clearTimeout(pendingTransferTimeout);
+        pendingTransferTimeout = null;
+    }
+    pendingTransferChannelId = null;
+    pendingTransferUserId = null;
+}
+
 const settings = definePluginSettings({
+    transferDelay: {
+        type: OptionType.SLIDER,
+        description: "Tempo de espera antes de transferir a chamada para o PC (em segundos). Defina como 0 para ser instantâneo.",
+        markers: [0, 1, 2, 3, 5, 10, 15, 20, 30, 60],
+        default: 0,
+        stickToMarkers: false,
+        componentProps: {
+            onValueRender: (v: number) => {
+                const rounded = Math.round(v);
+                return rounded === 0 ? "Instantâneo (0s)" : `${rounded}s`;
+            }
+        }
+    },
     notifyOnTransfer: {
         type: OptionType.BOOLEAN,
         default: true,
@@ -106,6 +132,11 @@ export default definePlugin({
                         lastMyChannelId = voiceState.channelId;
                         lastMyChannelTime = Date.now();
                         lastUserChannels.set(myId, voiceState.channelId);
+
+                        // Se a conta já estiver conectada em voz pelo PC, cancela transferência pendente
+                        if (SelectedChannelStore.getVoiceChannelId()) {
+                            clearPendingTransfer();
+                        }
                     } else {
                         lastUserChannels.delete(myId);
                         lastMyChannelTime = Date.now();
@@ -119,6 +150,11 @@ export default definePlugin({
 
                 // Ignora se for a própria conta
                 if (userId === myId) continue;
+
+                // Se o usuário monitorado retornou à chamada enquanto havia uma transferência pendente, cancela a espera
+                if (pendingTransferUserId === userId && pendingTransferChannelId === channelId) {
+                    clearPendingTransfer();
+                }
 
                 const oldChannelId = voiceState.oldChannelId ?? lastUserChannels.get(userId) ?? VoiceStateStore.getVoiceStateForUser(userId)?.channelId;
 
@@ -159,21 +195,38 @@ export default definePlugin({
                 const pcVoiceChannelId = SelectedChannelStore.getVoiceChannelId();
                 if (pcVoiceChannelId) continue;
 
-                // Todas as condições atendidas: transferir conexão para o PC fora do ciclo de dispatch
-                setTimeout(() => {
+                // Cancela qualquer transferência pendente anterior antes de agendar a nova
+                clearPendingTransfer();
+
+                const delaySeconds = Math.max(0, Math.round(settings.store.transferDelay ?? 0));
+                const delayMs = delaySeconds === 0 ? 100 : delaySeconds * 1000;
+
+                pendingTransferChannelId = leftChannelId;
+                pendingTransferUserId = userId;
+
+                // Todas as condições atendidas: aguarda o tempo configurado (ou instantâneo) antes de transferir
+                pendingTransferTimeout = setTimeout(() => {
+                    clearPendingTransfer();
+
+                    // Validação: Se o PC já estiver em uma chamada de voz, não transfere
                     const currentPcVoice = SelectedChannelStore.getVoiceChannelId();
                     if (currentPcVoice) return;
+
+                    // Validação: Se o usuário monitorado retornou à chamada durante o tempo de espera, cancela
+                    const currentMonitoredVs = VoiceStateStore.getVoiceStateForUser(userId);
+                    if (currentMonitoredVs?.channelId === leftChannelId) return;
 
                     ChannelActions.selectVoiceChannel(leftChannelId);
 
                     if (settings.store.notifyOnTransfer) {
                         showToast("CallKeeper: Chamada transferida para o PC.", Toasts.Type.SUCCESS);
                     }
-                }, 100);
+                }, delayMs);
             }
         }
     },
     start() {
+        clearPendingTransfer();
         lastUserChannels.clear();
         lastMyChannelId = null;
         lastMyChannelTime = 0;
@@ -214,6 +267,7 @@ export default definePlugin({
         }
     },
     stop() {
+        clearPendingTransfer();
         lastUserChannels.clear();
         lastMyChannelId = null;
         lastMyChannelTime = 0;
