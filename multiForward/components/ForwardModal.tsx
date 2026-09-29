@@ -17,6 +17,7 @@ import {
     PermissionStore,
     PrivateChannelSortStore,
     React,
+    ScrollerThin,
     TextArea,
     TextInput,
     UserStore
@@ -217,7 +218,7 @@ export function ForwardModal({
                     </span>
                 </div>
 
-                <div className="vc-multiforward-preview-list">
+                <ScrollerThin className="vc-multiforward-preview-list">
                     {messages.map((msg, index) => {
                         const avatar = msg.author ? getUserAvatarUrl(msg.author, undefined, true, 20) : "";
                         const textPreview = msg.content ? (msg.content.length > 80 ? msg.content.slice(0, 80) + "..." : msg.content) : (msg.attachments?.length ? `[${msg.attachments.length} anexo(s)]` : "[Mensagem]");
@@ -241,7 +242,7 @@ export function ForwardModal({
                             </div>
                         );
                     })}
-                </div>
+                </ScrollerThin>
 
                 {/* Campo de comentário / nota complementar opcional */}
                 <div className="vc-multiforward-note-container">
@@ -266,7 +267,7 @@ export function ForwardModal({
                 </div>
 
                 {/* Lista de destinos */}
-                <div className="vc-multiforward-destinations-list">
+                <ScrollerThin className="vc-multiforward-destinations-list">
                     {filteredDestinations.length === 0 ? (
                         <div className="vc-multiforward-empty">
                             Nenhum canal ou amigo encontrado com "{search}".
@@ -314,7 +315,7 @@ export function ForwardModal({
                             );
                         })
                     )}
-                </div>
+                </ScrollerThin>
 
                 {/* Barra de progresso se estiver enviando */}
                 {isSending && progress && (

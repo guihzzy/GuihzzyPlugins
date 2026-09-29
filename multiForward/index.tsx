@@ -4,6 +4,7 @@
  */
 
 import "./style.css";
+import managedStyle from "./style.css?managed";
 
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
@@ -159,6 +160,7 @@ export default definePlugin({
     authors: [Devs.Ven],
     dependencies: ["MessagePopoverAPI", "MessageDecorationsAPI", "MessageEventsAPI"],
     settings,
+    managedStyle,
 
     settingsAboutComponent: () => <SettingsBanner />,
 
