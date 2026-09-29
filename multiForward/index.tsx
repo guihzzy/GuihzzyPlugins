@@ -10,6 +10,7 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { Channel, Message, RenderModalProps } from "@vencord/discord-types";
 import {
+    ChannelStore,
     createRoot,
     Menu,
     openModal,
@@ -250,13 +251,16 @@ export default definePlugin({
             const isSelected = multiForwardStore.isSelected(message.id);
             const isSelecting = multiForwardStore.getIsSelecting();
 
+            const channel = ChannelStore.getChannel(message.channel_id);
+            if (!channel) return null;
+
             return {
                 label: isSelecting
                     ? (isSelected ? "Desmarcar Mensagem" : "Selecionar para Encaminhar")
                     : "Encaminhar Várias",
                 icon: ForwardIcon,
                 message,
-                channel: SelectedChannelStore.getChannelId(),
+                channel,
                 onClick: () => {
                     multiForwardStore.toggleMessage(message);
                 }

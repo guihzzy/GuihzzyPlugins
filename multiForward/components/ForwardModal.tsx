@@ -9,6 +9,7 @@ import {
     Button,
     ChannelStore,
     Checkbox,
+    GuildChannelStore,
     GuildStore,
     IconUtils,
     Modal,
@@ -97,10 +98,16 @@ export function ForwardModal({
                 const guild = guilds[guildId];
                 if (!guild) continue;
 
-                const channels = ChannelStore.getChannels(guildId);
-                const textChannels = (channels?.VOCAL || []).concat(channels?.SELECTABLE || []);
+                const channelsObj = GuildChannelStore.getChannels(guildId) as any;
+                const selectable = Array.isArray(channelsObj?.SELECTABLE)
+                    ? channelsObj.SELECTABLE
+                    : Object.values(channelsObj?.SELECTABLE || {});
+                const vocal = Array.isArray(channelsObj?.VOCAL)
+                    ? channelsObj.VOCAL
+                    : Object.values(channelsObj?.VOCAL || {});
+                const textChannels = [...selectable, ...vocal];
                 for (const cat of textChannels) {
-                    const channel = cat?.channel || cat;
+                    const channel = (cat as any)?.channel || cat;
                     if (!channel || channel.type === 4 || channel.type === 2) continue; // ignora categorias e canais de voz
                     if (seen.has(channel.id)) continue;
 
@@ -196,6 +203,7 @@ export function ForwardModal({
                 },
                 {
                     text: "Cancelar",
+                    variant: "secondary",
                     disabled: isSending,
                     onClick: modalProps.onClose
                 }
