@@ -1,0 +1,455 @@
+/*
+ * Equicord, a Discord client mod
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* =========================================================
+   Indicador de Seleção na Mensagem
+   ========================================================= */
+.vc-multiforward-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    vertical-align: middle;
+}
+
+.vc-multiforward-indicator:hover {
+    transform: scale(1.1);
+}
+
+.vc-multiforward-indicator-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--interactive-muted, #72767d);
+    border-radius: 5px;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.vc-multiforward-indicator:hover .vc-multiforward-indicator-box {
+    border-color: var(--brand-500, #5865f2);
+    background: rgba(88, 101, 242, 0.15);
+}
+
+.vc-multiforward-indicator.selected .vc-multiforward-indicator-badge {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #5865f2 0%, #4752c4 100%);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(88, 101, 242, 0.5);
+    animation: vc-multiforward-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes vc-multiforward-pop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* =========================================================
+   Barra Flutuante Inferior (Floating Action Bar)
+   ========================================================= */
+.vc-multiforward-floating-bar-wrapper {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    pointer-events: none;
+    animation: vc-multiforward-slide-up 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes vc-multiforward-slide-up {
+    from {
+        transform: translate(-50%, 40px);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.vc-multiforward-floating-bar {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 18px;
+    background: rgba(30, 31, 34, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(88, 101, 242, 0.2);
+    min-width: 480px;
+    max-width: 90vw;
+}
+
+.vc-multiforward-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.vc-multiforward-bar-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.3), rgba(88, 101, 242, 0.1));
+    color: #5865f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(88, 101, 242, 0.3);
+}
+
+.vc-multiforward-bar-text-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.vc-multiforward-bar-count {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--header-primary, #ffffff);
+    letter-spacing: -0.2px;
+}
+
+.vc-multiforward-bar-hint {
+    font-size: 11px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-multiforward-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vc-multiforward-btn {
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vc-multiforward-btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-normal, #dbdee1);
+}
+
+.vc-multiforward-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.vc-multiforward-btn-cancel {
+    background: transparent;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-multiforward-btn-cancel:hover {
+    background: rgba(242, 63, 67, 0.15);
+    color: #f23f43;
+}
+
+.vc-multiforward-send-btn {
+    box-shadow: 0 4px 12px rgba(88, 101, 242, 0.35);
+    font-weight: 700 !important;
+}
+
+/* =========================================================
+   Modal de Destinos de Encaminhamento
+   ========================================================= */
+.vc-multiforward-modal-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 70vh;
+}
+
+.vc-multiforward-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vc-multiforward-preview-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--header-secondary, #b5bac1);
+}
+
+.vc-multiforward-preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 140px;
+    overflow-y: auto;
+    padding: 6px;
+    background: var(--background-secondary, #2b2d31);
+    border-radius: 8px;
+    border: 1px solid var(--background-tertiary, #1e1f22);
+}
+
+.vc-multiforward-preview-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: var(--background-primary, #313338);
+    font-size: 13px;
+}
+
+.vc-multiforward-preview-index {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--brand-500, #5865f2);
+    min-width: 20px;
+}
+
+.vc-multiforward-preview-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.vc-multiforward-preview-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+}
+
+.vc-multiforward-preview-author {
+    font-weight: 600;
+    color: var(--header-primary, #ffffff);
+    white-space: nowrap;
+}
+
+.vc-multiforward-preview-text {
+    color: var(--text-muted, #949ba4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.vc-multiforward-preview-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted, #949ba4);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    transition: all 0.15s ease;
+}
+
+.vc-multiforward-preview-remove:hover {
+    color: #f23f43;
+    background: rgba(242, 63, 67, 0.15);
+}
+
+.vc-multiforward-note-container textarea {
+    resize: none !important;
+    font-size: 13px !important;
+}
+
+.vc-multiforward-search-container input {
+    font-size: 13px !important;
+}
+
+.vc-multiforward-destinations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.vc-multiforward-dest-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--background-secondary, #2b2d31);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.vc-multiforward-dest-item:hover {
+    background: var(--background-modifier-hover, rgba(255, 255, 255, 0.06));
+}
+
+.vc-multiforward-dest-item.active {
+    background: rgba(88, 101, 242, 0.12);
+    border-color: rgba(88, 101, 242, 0.35);
+}
+
+.vc-multiforward-dest-icon-box {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vc-multiforward-dest-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.vc-multiforward-dest-icon.round {
+    border-radius: 50%;
+}
+
+.vc-multiforward-dest-hash {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-multiforward-dest-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.vc-multiforward-dest-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vc-multiforward-dest-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--header-primary, #ffffff);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-multiforward-dest-guild {
+    font-size: 11px;
+    color: var(--text-muted, #949ba4);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.vc-multiforward-dest-sub {
+    font-size: 11px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-multiforward-empty {
+    text-align: center;
+    padding: 24px 0;
+    font-size: 13px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-multiforward-progress-bar-container {
+    position: relative;
+    height: 24px;
+    background: var(--background-secondary, #2b2d31);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vc-multiforward-progress-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #5865f2, #7983f5);
+    transition: width 0.2s ease;
+}
+
+.vc-multiforward-progress-text {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================================
+   Banner de Configurações do Plugin
+   ========================================================= */
+.vc-multiforward-settings-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.15) 0%, rgba(30, 31, 34, 0.7) 100%);
+    border: 1px solid rgba(88, 101, 242, 0.25);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.vc-multiforward-settings-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #5865f2;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+    flex-shrink: 0;
+}
+
+.vc-multiforward-settings-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 2px;
+}
+
+.vc-multiforward-settings-subtitle {
+    font-size: 12px;
+    color: var(--text-muted, #949ba4);
+}
