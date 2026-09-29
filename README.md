@@ -14,10 +14,11 @@
 
 ## 📦 Plugins Inclusos
 
-Esta pasta reúne ferramentas exclusivas focadas em utilidades de voz, notificações, monitoramento e produtividade no Discord.
+Esta pasta reúne ferramentas exclusivas focadas em utilidades de chat, voz, notificações, monitoramento e produtividade no Discord.
 
 | Plugin | Descrição | Categoria |
 | :--- | :--- | :--- |
+| **MultiForward** | Permite selecionar múltiplas mensagens no chat e encaminhá-las todas de uma só vez para qualquer canal ou amigo (com barra flutuante, busca rápida de destinos e envio seguro). | `Chat` `Utility` |
 | **CallTimer** | Exibe no topo da chamada o tempo decorrido em tempo real para DMs, Grupos e Canais de Voz (buscando o início exato em DMs). | `Voice` `Appearance` `Utility` |
 | **QuickEdit** | Edita mensagens próprias ou abre configurações de canais (texto, voz, categorias, tópicos) com duplo clique esquerdo. | `Chat` `Shortcuts` `Utility` |
 | **VoiceChannelLog** | Registra histórico detalhado de voz (entradas, saídas, microfone mutado/desmutado, fone ensurdecido, câmeras, telas, soundboard e exportação em .JSON). | `Voice` `Utility` |
@@ -36,14 +37,15 @@ Esta pasta reúne ferramentas exclusivas focadas em utilidades de voz, notifica�
 1. **Localização**: Certifique-se de que os plugins estejam dentro da pasta de plugins do Equicord (`src/equicordplugins/`).
 2. **Build**: Compile ou execute o cliente em modo de desenvolvimento (`pnpm build` ou `pnpm dev`).
 3. **Ativação**: No Discord, abra as **Configurações de Usuário** → **Plugins** e ative os plugins desejados.
-4. **Configuração**: Alguns plugins possuem opções configuráveis na engrenagem de configurações ou através do menu de contexto (botão direito em usuários/canais).
+4. **Configuração**: Alguns plugins possuem opções configuráveis na engrenagem de configurações ou através do menu de contexto (botão direito em mensagens, usuários ou canais).
 
 ---
 
 ## 🔒 Boas Práticas & Segurança
 
-- **Compatibilidade**: Desenvolvidos seguindo as convenções nativas e stores do Equicord (`VoiceStateStore`, `ChannelStore`, `UserStore`, etc.).
+- **Compatibilidade**: Desenvolvidos seguindo as convenções nativas e stores do Equicord (`VoiceStateStore`, `ChannelStore`, `UserStore`, `GuildStore`, etc.).
 - **Desempenho**: Ouvintes leves com limpeza adequada de eventos no ciclo de vida (`start` / `stop`).
+- **Resiliência**: Tratamento de rate-limits com delays assíncronos e fallbacks inteligentes para evitar falhas de envio ou travamentos.
 
 ---
 
