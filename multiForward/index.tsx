@@ -14,6 +14,7 @@ import {
     ChannelStore,
     createRoot,
     Menu,
+    MessageStore,
     openModal,
     React,
     SelectedChannelStore
@@ -63,6 +64,37 @@ const settings = definePluginSettings({
 
 let rootContainer: Root | null = null;
 let domContainer: HTMLDivElement | null = null;
+let storeUnsubscribe: (() => void) | null = null;
+
+/**
+ * Aplica/remove a classe `.vc-multiforward-msg-selected` e o atributo
+ * `data-mf-index` diretamente nos elementos `<li>` de cada mensagem.
+ *
+ * Necessário porque `renderMessageDecoration` só é chamado pelo Discord
+ * para a primeira mensagem de cada grupo visual — as agrupadas não recebem
+ * o componente React, então precisamos do DOM para mostrar o indicador.
+ */
+function syncHighlights() {
+    // Remove todos os destaques anteriores
+    document.querySelectorAll(".vc-multiforward-msg-selected").forEach(el => {
+        el.classList.remove("vc-multiforward-msg-selected");
+        el.removeAttribute("data-mf-index");
+    });
+
+    if (!multiForwardStore.getIsSelecting()) return;
+
+    const ordered = multiForwardStore.getOrderedMessages();
+    ordered.forEach((msg, i) => {
+        // O Discord sempre renderiza id="message-content-<messageId>" em cada mensagem,
+        // inclusive nas agrupadas — subir até o <li> garante que aplicamos no container correto.
+        const contentEl = document.getElementById("message-content-" + msg.id);
+        const li = contentEl?.closest<HTMLElement>("li");
+        if (li) {
+            li.classList.add("vc-multiforward-msg-selected");
+            li.setAttribute("data-mf-index", String(i + 1));
+        }
+    });
+}
 
 function setupFloatingBar() {
     if (!rootContainer) {
@@ -121,6 +153,74 @@ function handleChannelChange() {
     }
 }
 
+/**
+ * Extrai o messageId do elemento DOM clicado.
+ *
+ * O Discord usa estas convenções de id:
+ *  - `id="message-content-<messageId>"` no div de conteúdo de CADA mensagem (inclusive agrupadas)
+ *  - `id="message-accessories-<messageId>"` nos anexos/embeds de cada mensagem
+ *  - `id="chat-messages-<channelId>-<messageId>"` no `<li>` container (apenas da primeira do grupo)
+ *
+ * Prioriza `message-content-` porque funciona para TODAS as mensagens do grupo.
+ */
+function getMessageIdFromClick(target: HTMLElement): string | null {
+    // 1. Conteúdo individual da mensagem (funciona em mensagens agrupadas)
+    const contentEl = target.closest<HTMLElement>('[id^="message-content-"]');
+    if (contentEl) {
+        const id = contentEl.id.replace("message-content-", "");
+        if (/^\d{17,20}$/.test(id)) return id;
+    }
+
+    // 2. Acessórios da mensagem (anexos, embeds)
+    const accEl = target.closest<HTMLElement>('[id^="message-accessories-"]');
+    if (accEl) {
+        const id = accEl.id.replace("message-accessories-", "");
+        if (/^\d{17,20}$/.test(id)) return id;
+    }
+
+    // 3. Fallback: container <li> da mensagem
+    const messageLi = target.closest<HTMLElement>('[id*="chat-messages-"], [id*="chat-messages___"], [data-list-item-id*="chat-messages"]');
+    if (messageLi) {
+        const idAttr = messageLi.id || messageLi.getAttribute("data-list-item-id") || "";
+        const numbers = idAttr.match(/\d{17,20}/g);
+        if (numbers && numbers.length >= 2) return numbers[1]; // segundo número = messageId
+        if (numbers && numbers.length === 1) return numbers[0];
+    }
+
+    return null;
+}
+
+function handleDomClick(e: MouseEvent) {
+    if (!multiForwardStore.getIsSelecting()) return;
+
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+
+    // Ignora cliques em elementos interativos ou nossos overlays
+    if (target.closest("a, button, [role='button'], input, textarea, select, .vc-multiforward-floating-bar, .vc-multiforward-modal-container")) {
+        return;
+    }
+
+    const messageId = getMessageIdFromClick(target);
+    if (!messageId) return;
+
+    const channelId = SelectedChannelStore.getChannelId();
+    if (!channelId) return;
+
+    const activeChannelId = multiForwardStore.getActiveChannelId();
+    if (activeChannelId && activeChannelId !== channelId) return;
+
+    const message = MessageStore.getMessage(channelId, messageId);
+    if (!message) return;
+
+    const channel = ChannelStore.getChannel(channelId);
+    if (!channel) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    multiForwardStore.toggleMessage(message);
+}
+
 function findForwardMenuItem(children: any[]): any {
     if (!Array.isArray(children)) return null;
     for (const child of children) {
@@ -158,7 +258,7 @@ export default definePlugin({
     description: "Permite selecionar múltiplas mensagens e encaminhá-las todas de uma vez para qualquer canal ou amigo.",
     tags: ["Chat", "Utility"],
     authors: [Devs.Ven],
-    dependencies: ["MessagePopoverAPI", "MessageDecorationsAPI", "MessageEventsAPI"],
+    dependencies: ["MessagePopoverAPI", "MessageDecorationsAPI"],
     settings,
     managedStyle,
 
@@ -170,13 +270,28 @@ export default definePlugin({
 
         setupFloatingBar();
 
+        // Sincroniza destaques visuais no DOM a cada mudança do store
+        storeUnsubscribe = multiForwardStore.subscribe(syncHighlights);
+
         document.addEventListener("keydown", handleKeyDown);
+        // Usa captura (true) para interceptar antes dos handlers do Discord
+        document.addEventListener("click", handleDomClick, true);
         SelectedChannelStore.addChangeListener(handleChannelChange);
     },
 
     stop() {
         document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("click", handleDomClick, true);
         SelectedChannelStore.removeChangeListener(handleChannelChange);
+
+        storeUnsubscribe?.();
+        storeUnsubscribe = null;
+
+        // Limpa todos os destaques DOM ao desativar
+        document.querySelectorAll(".vc-multiforward-msg-selected").forEach(el => {
+            el.classList.remove("vc-multiforward-msg-selected");
+            el.removeAttribute("data-mf-index");
+        });
 
         removeFloatingBar();
         multiForwardStore.cancelSelection();
@@ -268,27 +383,6 @@ export default definePlugin({
                 }
             };
         }
-    },
-
-    onMessageClick(msg: Message, channel: Channel, event: MouseEvent) {
-        if (!multiForwardStore.getIsSelecting()) return;
-
-        // Se o usuário clicar em uma mensagem de outro canal, cancela
-        if (multiForwardStore.getActiveChannelId() && multiForwardStore.getActiveChannelId() !== channel.id) {
-            return;
-        }
-
-        const target = event.target as HTMLElement | null;
-        if (!target) return;
-
-        // Ignora cliques dentro de botões interativos, links, imagens ou a própria barra flutuante
-        if (target.closest("a, button, [role='button'], input, textarea, .vc-multiforward-floating-bar, .vc-multiforward-modal-container")) {
-            return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-        multiForwardStore.toggleMessage(msg);
     },
 
     renderMessageDecoration({ message }: { message: Message; }) {

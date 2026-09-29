@@ -4,7 +4,48 @@
  */
 
 /* =========================================================
-   Indicador de Seleção na Mensagem
+   Destaque DOM em mensagens selecionadas (funciona em mensagens agrupadas)
+   Aplicado diretamente no <li> via syncHighlights(), sem depender do React
+   ========================================================= */
+.vc-multiforward-msg-selected {
+    background: rgba(88, 101, 242, 0.08) !important;
+    border-left: 3px solid #5865f2 !important;
+    position: relative;
+    transition: background 0.15s ease;
+}
+
+.vc-multiforward-msg-selected:hover {
+    background: rgba(88, 101, 242, 0.14) !important;
+}
+
+/* Badge com o número de ordem — usa data-mf-index via CSS attr() */
+.vc-multiforward-msg-selected::before {
+    content: attr(data-mf-index);
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    min-width: 20px;
+    height: 18px;
+    padding: 0 4px;
+    background: linear-gradient(135deg, #5865f2 0%, #4752c4 100%);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(88, 101, 242, 0.5);
+    pointer-events: none;
+    line-height: 1;
+    text-align: center;
+    animation: vc-multiforward-pop 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* =========================================================
+   Indicador de Seleção na Mensagem (renderMessageDecoration)
    ========================================================= */
 .vc-multiforward-indicator {
     display: inline-flex;
