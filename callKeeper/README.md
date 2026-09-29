@@ -28,7 +28,9 @@ Antes de realizar a transferência para o PC, o plugin valida rigorosamente:
 
 ## Configurações
 
+- **Tempo de espera antes da transferência:** Tempo (em segundos) que o plugin aguarda após a pessoa sair da call antes de conectar o PC. Se configurado como `0`, a troca é **instantânea**. Caso a pessoa reconecte durante esse período de espera, a transferência é automaticamente cancelada.
 - **Exibir notificação quando a chamada for transferida para o PC:** Exibe um aviso (toast) visual no canto da tela informando que a conexão foi assumida com sucesso pelo PC.
+- **Apenas transferir chamadas de DMs e Grupos:** Filtra a ação para DMs e Group DMs, ignorando servidores.
 
 ---
 
