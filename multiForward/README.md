@@ -39,3 +39,7 @@ Plugin para **Equicord** que permite selecionar múltiplas mensagens no chat e e
 ## 🛡️ Fallback Automático
 
 Se o Discord rejeitar o encaminhamento nativo (por exemplo, mensagens antigas ou restrições de permissão/NSFW), o plugin faz um fallback inteligente formatando as mensagens com citação e links de anexos, garantindo que nada se perca!
+
+---
+
+<p align="center">Feito com ❤️ por <b>Guih</b></p>
