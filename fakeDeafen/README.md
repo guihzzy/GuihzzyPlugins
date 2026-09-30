@@ -1,63 +1,34 @@
 # Plugin FakeDeafen
 
 ## 📝 Descrição
-O **FakeDeafen** é um plugin que intercepta os pacotes do WebSocket do Discord para fazer parecer que você está surdo para outros usuários, enquanto na verdade você ainda pode ouvir tudo normalmente. Isso é útil quando você quer parecer offline ou indisponível, mas ainda precisa ouvir o que está acontecendo no canal de voz.
+O **FakeDeafen** permite que você controle com precisão como o seu estado de áudio é visto pelos outros usuários no Discord, interceptando os pacotes do Gateway (Voice State Update - OP 4) diretamente antes do envio ao servidor. 
 
-> ⚠️ **Atenção:** Este plugin modifica o comportamento do WebSocket do Discord. Use com responsabilidade.
+Você pode aparentar estar **ensurdecido**, **mutado**, com **ambos ativos** ou até **completamente invisível/ativo**, enquanto **localmente você continua ouvindo e falando normalmente**.
+
+---
 
 ## ✨ Funcionalidades
-- 🎭 **Surdez Falsa**: Finge que você está surdo para outros usuários
-- 🔊 **Áudio Preservado**: Você ainda pode ouvir o áudio normalmente
-- 🔔 **Notificações**: Avisa quando o modo fake deafen é ativado/desativado
-- 🔌 **Interceptação WebSocket**: Intercepta pacotes do WebSocket para manter o estado de "surdo"
-- 🛡️ **Proteção Automática**: Bloqueia pacotes que tentam desativar a surdez
 
-## 🚀 Como Usar
-1. **Ative o plugin**: Vá em **Configurações de Usuário > Vencord > Plugins** e ative o **FakeDeafen**.
-2. **Entre em um canal de voz**: Conecte-se a qualquer canal de voz no Discord.
-3. **Ative a surdez**: Use o atalho padrão do Discord (Ctrl+Shift+D) ou clique no botão de surdez no painel de voz.
-4. **Mantenha-se "surdo"**: O plugin automaticamente interceptará os pacotes e manterá você "surdo" visualmente, mas ainda audível para você.
+- 🎧 **Múltiplos Modos de Exibição:**
+  - **Apenas Ensurdecido:** O servidor registra `self_deaf: true` (mostra o fone cortado).
+  - **Apenas Mutado:** O servidor registra `self_mute: true` (mostra o microfone cortado).
+  - **Mutado e Ensurdecido:** O servidor registra ambos como `true` e injeta os dois ícones cortados (🎙️🚫 + 🎧🚫) na interface do canal de voz.
+  - **Normal / Invisível:** Envia ambos como `false`, parecendo totalmente ativo sem nenhum ícone de mudo.
+- 🔊 **Áudio e Microfone 100% Funcionais:** Seu áudio local nunca é desativado — você escuta todas as conversas e pode falar à vontade em qualquer um dos modos.
+- 🔔 **Notificações em Card (Toasts):** Feedback visual instantâneo e moderno no canto inferior direito quando o plugin é ativado ou desativado, informando o modo e o estado atual.
+- 🔌 **Gateway Socket Hook:** Interceptação segura e estável via wrapper interno do Gateway do Discord, sem conflitar com outros mods de áudio.
+- 🎛️ **Botão Rápido no Painel de Usuário:** Ícone dedicado no rodapé ao lado do seu microfone e fone para ligar/desligar com 1 clique e feedback visual da cor do estado.
 
-## ⚙️ Como Funciona
+---
 
-O plugin funciona interceptando os pacotes do WebSocket que o Discord envia quando você tenta desativar a surdez. Quando você ativa a surdez, o plugin:
+## ⚙️ Opções Disponíveis
 
-1. Sobrescreve o método `send` do `WebSocket.prototype`
-2. Filtra pacotes que tentam desativar a surdez (`self_deaf: false`)
-3. Descarta esses pacotes, mantendo você "surdo" para outros usuários
-4. Permite que todos os outros pacotes passem normalmente
-
-> ⚠️ **Nota:** O plugin pode não funcionar se o Discord mudar a estrutura dos pacotes em atualizações futuras.
-
-## 🛠️ Instalação
-
-### Pré-requisitos
-Você precisa ter o **Vencord** instalado via código-fonte (não a versão `.exe`).
-
-1. **Abra a pasta de plugins do Vencord:**
-   Geralmente em: `Documentos/Vencord/src/plugins` ou `Documentos/Equicord/src/plugins`
-
-2. **Crie a pasta do plugin:**
-   Crie uma pasta chamada `fakeDeafen` dentro de `plugins`.
-
-3. **Adicione os arquivos:**
-   Coloque o arquivo `index.ts` dentro da pasta `fakeDeafen`.
-
-4. **Recompile o Vencord:**
-   Abra o terminal na pasta do Vencord e execute:
-   ```sh
-   pnpm build
-   ```
-
-5. **Ative no Discord:**
-   - Reinicie o Discord.
-   - Vá em **Configurações de Usuário > Vencord > Plugins**.
-   - Procure por `FakeDeafen` e ative.
-
-## 📝 Licença
-Este plugin é parte do ecossistema Vencord e está licenciado sob **GPL-3.0-or-later**.
+Nas configurações do plugin, selecione a opção desejada em **Icon Mode**:
+1. **Apenas Ensurdecido (Aparece com fone cortado)**
+2. **Apenas Mutado (Aparece com microfone cortado)**
+3. **Mutado e Ensurdecido (Aparece com fone e microfone cortados)**
+4. **Normal / Invisível (Aparece totalmente ativo, sem nenhum ícone)**
 
 ---
 
 <p align="center">Feito com ❤️ por <b>Guih</b></p>
-
